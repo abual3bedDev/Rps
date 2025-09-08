@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Rock paper scissors</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libertinus+Serif+Display&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+ <link rel="stylesheet" href="style.css">
+ 
+</head>
+<body>
+  <div id="playerInfo" class="player-info" style="display:none;">
+    <i style="font-size:24px" class="fa">&#xf2be;</i>
+    <span id="playerDisplayName"></span>
+  </div>
+
+  <h1>Rock Paper Scissors</h1>
+
+  <!-- شاشة إدخال الاسم -->
+  <div id="enterName">
+    <h2>Your Name :</h2>
+    <div class="wave-group player-name-group">
+      <input id="playerName" required type="text" class="input player-name-input">
+      <span class="bar"></span>
+      <label class="label">
+        <span class="label-char" style="--index: 0">N</span>
+        <span class="label-char" style="--index: 1">a</span>
+        <span class="label-char" style="--index: 2">m</span>
+        <span class="label-char" style="--index: 3">e</span>
+      </label>
+    </div>
+    <button class="btn-accept" onclick="saveName()">
+      <i class="fa-solid fa-check"></i> Done
+    </button>
+  </div>
+
+  <!-- اللوبي -->
+  <div id="lobby" style="display:none;">
+    <button class="btn-create" onclick="createRoom()">
+      <span class="plus"><i class="fa-solid fa-plus"></i></span>
+      <span class="text">New Room</span>
+    </button>
+    <br>
+    <input class="Id" id="roomId" placeholder="Room Id">
+    <button class="btn-joinroom" onclick="joinRoom()"> 
+      <span class="key"><i class="fa-solid fa-key"></i></span>
+      <span class="text">Connect</span>
+    </button>
+  </div>
+
+  <!-- واجهة اللعب -->
+  <div id="game" style="display:none;">
+    <h2 id="info"></h2>
+     <div class="players-container">
+    <!-- لاعب 2 فوق -->
+    <div class="player-box" id="player2Box">
+      <h3 id="name2">Player 2</h3>
+      <p id="choice2"> Waiting...</p>
+    </div>
+
+    <!-- لاعب 1 تحت -->
+    <div class="player-box" id="player1Box">
+      <h3 id="name1">Player 1</h3>
+      <p id="choice1"> Waiting...</p>
+    </div>
+  </div>
+
+ 
+  <div class="controls">
+    <button class="btn-rock" onclick="play('Rock')"><i class="far fa-hand-rock"></i></button>
+    <button class="btn-paper" onclick="play('Paper')"><i class="far fa-hand-paper"></i></button>
+    <button class="btn-scissors" onclick="play('Scissors')"><i class="far fa-hand-peace"></i></button>
+  </div>
+
+  <div class="battle-area" id="battleArea" style="display:none;">
+  <div class="hand left-hand" id="leftHand">✊</div>
+  <div class="hand right-hand" id="rightHand">✊</div>
+</div>
+<h2 id="result"></h2>
+
+
+    <!-- زر الرجوع للـ Lobby -->
+    <button class="btn-lobby" onclick="backToLobby()">
+       <span class="lobby"><i class="fa-solid fa-right-from-bracket"></i></i></span> 
+        <span class="text">Back to Lobby</span>
+    </button>
+  </div>
+
+  <!-- إشعارات -->
+  <div id="toast-container"></div>
+
+  <!-- موديل الكود + QR -->
+  <div id="roomModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Room Code</h2>
+      <p id="roomCodeText"></p>
+      <div id="qrcode"></div>
+      <button onclick="copyRoomCode()">Copy Code</button>
+    </div>
+  </div>
+
+  
+ 
+  <script src="script.js"></script>
+  
+</body>
+
+</html>
