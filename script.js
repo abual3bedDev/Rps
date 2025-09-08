@@ -64,7 +64,7 @@ function createRoom() {
   player = "player1";
 
   db.ref("rooms/" + currentRoom).set({
-    player1: "",
+    player1: playerName,   
     player2: "",
     name1: playerName,
     name2: ""
@@ -73,6 +73,8 @@ function createRoom() {
   openModal(currentRoom);
   document.getElementById("lobby").style.display = "none";
   document.getElementById("game").style.display = "block";
+
+  checkResult(); 
 }
 
 
@@ -85,25 +87,27 @@ function joinRoom() {
     return;
   }
 
- 
   db.ref("rooms/" + RoomId).once("value").then((snapshot) => {
     if (snapshot.exists()) {
-      
       currentRoom = RoomId;
       player = "player2";
 
+      
+      db.ref("rooms/" + currentRoom + "/player2").set(playerName);
       db.ref("rooms/" + currentRoom + "/name2").set(playerName);
 
-      showToast(`Room ${currentRoom}`, "success");
+      showToast(`Joined Room ${currentRoom}`, "success");
 
       document.getElementById("lobby").style.display = "none";
       document.getElementById("game").style.display = "block";
+
+      checkResult(); 
     } else {
-      
       showToast("Room not found!", "error");
     }
   });
 }
+
 
 
 
