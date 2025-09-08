@@ -78,8 +78,8 @@ function createRoom() {
 }
 
 
-
 function joinRoom() {
+  console.log("joinRoom() called"); // للتأكد أنه وصل هنا
   let RoomId = document.getElementById("roomId").value.trim();
 
   if (RoomId === "") {
@@ -88,25 +88,30 @@ function joinRoom() {
   }
 
   db.ref("rooms/" + RoomId).once("value").then((snapshot) => {
+    console.log("Firebase responded:", snapshot.val());
     if (snapshot.exists()) {
       currentRoom = RoomId;
       player = "player2";
 
-      
-      db.ref("rooms/" + currentRoom + "/player2").set(playerName);
-      db.ref("rooms/" + currentRoom + "/name2").set(playerName);
+      db.ref("rooms/" + currentRoom).update({
+        player2: playerName,
+        name2: playerName
+      });
 
       showToast(`Joined Room ${currentRoom}`, "success");
 
       document.getElementById("lobby").style.display = "none";
       document.getElementById("game").style.display = "block";
 
-      checkResult(); 
+      checkResult();
     } else {
       showToast("Room not found!", "error");
     }
+  }).catch((err) => {
+    console.error("Firebase error:", err);
   });
 }
+
 
 
 
@@ -245,3 +250,4 @@ function backToLobby() {
   player = "";
   document.getElementById("result").innerText = "";
 }
+
