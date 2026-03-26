@@ -1,115 +1,613 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>Rock paper scissors</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libertinus+Serif+Display&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPS Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("rps_theme_preference");
+        var resolved = stored === "light" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", resolved);
+      } catch (error) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
- <link rel="stylesheet" href="style.css">
- 
+  <link rel="stylesheet" href="style.css?v=20260326bf">
 </head>
 <body>
-  <div id="playerInfo" class="player-info" style="display:none;">
-    <i style="font-size:24px" class="fa">&#xf2be;</i>
-    <span id="playerDisplayName"></span>
-  </div>
+<div class="page-noise"></div>
+  <div class="gradient-ball ball-one"></div>
+  <div class="gradient-ball ball-two"></div>
 
-  <h1>Rock Paper Scissors</h1>
+  <section id="landingScreen" class="landing-screen">
+    <header class="landing-nav">
+      <div class="brand-mark">
+        <span class="brand-icon"><i class="fa-solid fa-hand-fist"></i></span>
+        <div>
+          <span class="nav-label">RPS Arena</span>
+          <strong>Friends Battle Platform</strong>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="ghost-btn" onclick="openAuthScreen('login')">Login</button>
+        <button class="primary-btn" onclick="openAuthScreen('signup')">Get Started</button>
+      </div>
+    </header>
 
-  <!-- شاشة إدخال الاسم -->
-  <div id="enterName">
-    <h2>Your Name :</h2>
-    <div class="wave-group player-name-group">
-      <input id="playerName" required type="text" class="input player-name-input">
-      <span class="bar"></span>
-      <label class="label">
-        <span class="label-char" style="--index: 0">N</span>
-        <span class="label-char" style="--index: 1">a</span>
-        <span class="label-char" style="--index: 2">m</span>
-        <span class="label-char" style="--index: 3">e</span>
-      </label>
+    <div class="landing-layout">
+      <section class="hero-panel">
+        <div class="hero-badge">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Private matches, rank ladders, social play</span>
+        </div>
+        <h1 class="hero-title">واجهة تنافس جديدة بالكامل للعب ضد أصدقائك فقط</h1>
+        <p class="hero-text">
+          ابنِ ملفك الشخصي، أنشئ Arena بإعدادات مخصصة، العب بجولات وتايمر ذكي،
+          ثم راقب النقاط والرانكات داخل لوحة خاصة أنيقة وسريعة.
+        </p>
+
+        <div class="hero-actions">
+          <button class="primary-btn large-btn" onclick="openAuthScreen('signup')">
+            <i class="fa-solid fa-rocket"></i>
+            <span>ابدأ اللعب</span>
+          </button>
+          <button class="outline-btn large-btn" onclick="openAuthScreen('login')">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span>تسجيل الدخول</span>
+          </button>
+        </div>
+
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <strong>Private</strong>
+            <span>Friends-Only Experience</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Custom</strong>
+            <span>Rounds, Timer, Visibility</span>
+          </div>
+          <div class="mini-stat">
+            <strong>Live</strong>
+            <span>Realtime Arena & Summary</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="hero-side">
+        <div class="spotlight-card primary-card">
+          <div class="spotlight-icon"><i class="fa-solid fa-trophy"></i></div>
+          <div>
+            <span class="card-tag">Competitive</span>
+            <h3>Ranks & Points</h3>
+            <p>تابع تقدمك بعد كل مباراة مع summary واضح للتغيرات.</p>
+          </div>
+        </div>
+        <div class="spotlight-card">
+          <div class="spotlight-icon"><i class="fa-solid fa-users-rays"></i></div>
+          <div>
+            <span class="card-tag">Social</span>
+            <h3>Friends System</h3>
+            <p>أضف أصدقاءك، أرسل طلبات، وشاهد الترتيب الخاص بكم فقط.</p>
+          </div>
+        </div>
+        <div class="spotlight-card">
+          <div class="spotlight-icon"><i class="fa-solid fa-stopwatch-20"></i></div>
+          <div>
+            <span class="card-tag">Smart Arena</span>
+            <h3>Auto Timer Logic</h3>
+            <p>إذا تأخر لاعب عن الاختيار، النظام يختار تلقائيًا عند انتهاء الوقت.</p>
+          </div>
+        </div>
+      </aside>
     </div>
-    <button class="btn-accept" onclick="saveName()">
-      <i class="fa-solid fa-check"></i> Done
-    </button>
-  </div>
 
-  <!-- اللوبي -->
-  <div id="lobby" style="display:none;">
-    <button class="btn-create" onclick="createRoom()">
-      <span class="plus"><i class="fa-solid fa-plus"></i></span>
-      <span class="text">New Room</span>
-    </button>
-    <br>
-    <input class="Id" id="roomId" placeholder="Room Id">
-    <button class="btn-joinroom" onclick="joinRoom()"> 
-      <span class="key"><i class="fa-solid fa-key"></i></span>
-      <span class="text">Connect</span>
-    </button>
-  </div>
+    <section class="feature-strip">
+      <article class="feature-box">
+        <i class="fa-solid fa-user-group"></i>
+        <h3>دوائر خاصة</h3>
+        <p>رتبك وبياناتك تظهر لك ولأصدقائك فقط بدون زحمة عالمية.</p>
+      </article>
+      <article class="feature-box">
+        <i class="fa-solid fa-sliders"></i>
+        <h3>غرف مرنة</h3>
+        <p>حدد عدد الجولات، وقت الجولة، ونوع الغرفة من نفس الداشبورد.</p>
+      </article>
+      <article class="feature-box">
+        <i class="fa-solid fa-chess-clock"></i>
+        <h3>مواجهات ذكية</h3>
+        <p>إخفاء اختيار الخصم حتى نهاية العد، ثم reveal أنيق داخل الـ Arena.</p>
+      </article>
+      <article class="feature-box">
+        <i class="fa-solid fa-chart-line"></i>
+        <h3>تقدم مستمر</h3>
+        <p>Points, ranks, wins, losses, وكلها متصلة بالمباريات في الوقت الحقيقي.</p>
+      </article>
+    </section>
+  </section>
 
-  <!-- واجهة اللعب -->
-  <div id="game" style="display:none;">
-    <h2 id="info"></h2>
-     <div class="players-container">
-    <!-- لاعب 2 فوق -->
-    <div class="player-box" id="player2Box">
-      <h3 id="name2">Player 2</h3>
-      <p id="choice2"> Waiting...</p>
+  <section id="setupScreen" class="auth-screen" style="display:none;">
+    <div class="auth-shell">
+      <div class="auth-visual">
+        <div class="auth-orbit orbit-one"></div>
+        <div class="auth-orbit orbit-two"></div>
+        <div class="auth-copy">
+          <p class="eyebrow">Access Portal</p>
+          <h1>ادخل إلى ساحة اللعب</h1>
+          <p>أنشئ حسابك بالإيميل وكلمة المرور واسم المستخدم، ثم انتقل إلى لوحة التحكم الخاصة بك.</p>
+          <ul class="auth-points">
+            <li><i class="fa-solid fa-shield-halved"></i><span>حساب خاص وآمن</span></li>
+            <li><i class="fa-solid fa-people-group"></i><span>نظام أصدقاء وترتيب خاص</span></li>
+            <li><i class="fa-solid fa-gamepad"></i><span>Arena منفصلة بتجربة لعب حديثة</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <button class="back-link" onclick="setLandingVisible(true); setSetupVisible(false);">
+          <i class="fa-solid fa-arrow-right"></i>
+          <span>رجوع للرئيسية</span>
+        </button>
+
+        <div class="tab-switcher">
+          <button id="loginTabBtn" class="tab-btn active-tab" onclick="setAuthMode('login')">تسجيل الدخول</button>
+          <button id="signupTabBtn" class="tab-btn" onclick="setAuthMode('signup')">إنشاء حساب</button>
+        </div>
+
+        <div class="auth-title-block">
+          <span class="card-tag">Email Access</span>
+          <h2 id="authHeadline">أهلاً بعودتك</h2>
+          <p id="authSubtitle">سجّل دخولك للوصول إلى غرفك، أصدقائك، والـ Arena الخاصة بك.</p>
+        </div>
+
+        <div id="usernameField" class="field-group" style="display:none;">
+          <label for="displayNameInput">اسم المستخدم</label>
+          <div class="input-frame">
+            <i class="fa-solid fa-at"></i>
+            <input id="displayNameInput" type="text" placeholder="اسمك داخل اللعبة">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="emailInput">الإيميل</label>
+          <div class="input-frame">
+            <i class="fa-solid fa-envelope"></i>
+            <input id="emailInput" type="email" placeholder="name@example.com">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="passwordInput">كلمة المرور</label>
+          <div class="input-frame">
+            <i class="fa-solid fa-lock"></i>
+            <input id="passwordInput" type="password" placeholder="••••••••">
+          </div>
+        </div>
+
+        <button id="authSubmitBtn" class="primary-btn wide-btn submit-btn" onclick="submitAuth()">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>تسجيل الدخول</span>
+        </button>
+      </div>
     </div>
+  </section>
 
-    <!-- لاعب 1 تحت -->
-    <div class="player-box" id="player1Box">
-      <h3 id="name1">Player 1</h3>
-      <p id="choice1"> Waiting...</p>
-    </div>
-  </div>
+  <main id="appShell" class="app-shell" style="display:none;">
+    <section id="dashboardView" class="page-view">
+      <header class="dashboard-topbar">
+        <div class="dashboard-intro">
+          <span class="card-tag">Control Center</span>
+          <h2>لوحة تحكم الساحة</h2>
+        </div>
 
- 
-  <div class="controls">
-    <button class="btn-rock" onclick="play('Rock')"><i class="far fa-hand-rock"></i></button>
-    <button class="btn-paper" onclick="play('Paper')"><i class="far fa-hand-paper"></i></button>
-    <button class="btn-scissors" onclick="play('Scissors')"><i class="far fa-hand-peace"></i></button>
-  </div>
+        <div class="account-cluster">
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="تبديل الثيم" title="تبديل الثيم" onclick="toggleTheme()">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <div class="account-chip strong-chip">
+            <i class="fa-solid fa-user-astronaut"></i>
+            <div>
+              <span class="mini-label label-with-icon"><i class="fa-regular fa-id-badge"></i><span>الحساب</span></span>
+              <strong id="profileName">-</strong>
+            </div>
+          </div>
+          <div class="account-chip">
+            <div>
+              <span class="mini-label label-with-icon"><i class="fa-solid fa-user-plus"></i><span>Friend Code</span></span>
+              <strong id="friendCodeValue">------</strong>
+            </div>
+            <button class="mini-btn" onclick="copyFriendCode()">نسخ</button>
+          </div>
+          <button class="ghost-btn logout-btn" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </header>
 
-  <div class="battle-area" id="battleArea" style="display:none;">
-  <div class="hand left-hand" id="leftHand">✊</div>
-  <div class="hand right-hand" id="rightHand">✊</div>
-</div>
-<h2 id="result"></h2>
+      <section class="stat-grid">
+        <article class="stat-card accent-blue">
+          <div class="card-illustration tone-points"><i class="fa-solid fa-coins"></i></div>
+          <div class="stat-orb tone-points"><i class="fa-solid fa-coins"></i></div>
+          <div class="points-display">
+            <strong id="pointsValue">0</strong>
+            <span id="pointsGainFx" class="points-gain-fx">+1</span>
+          </div>
+          <p id="pointsRecoveryHint" class="points-recovery-hint" style="display:none;">سيتم إضافة نقطة لك بعد 01:00</p>
+        </article>
+        <article class="stat-card accent-gold">
+          <div class="card-illustration tone-rank"><i class="fa-solid fa-trophy"></i></div>
+          <div class="stat-orb tone-rank"><i class="fa-solid fa-trophy"></i></div>
+          <strong id="rankValue">Bronze</strong>
+          <button id="rankBadge" class="rank-pill bronze rank-badge-trigger" type="button" onclick="toggleRankOverview(event)">
+            <i class="fa-solid fa-shield"></i>
+            <span>Bronze</span>
+          </button>
+        </article>
+        <article class="stat-card accent-green">
+          <div class="card-illustration tone-wins"><i class="fa-solid fa-crown"></i></div>
+          <div class="stat-orb tone-wins"><i class="fa-solid fa-crown"></i></div>
+          <strong id="winsValue">0</strong>
+        </article>
+        <article class="stat-card accent-red">
+          <div class="card-illustration tone-losses"><i class="fa-solid fa-heart-crack"></i></div>
+          <div class="stat-orb tone-losses"><i class="fa-solid fa-heart-crack"></i></div>
+          <strong id="lossesValue">0</strong>
+        </article>
+      </section>
 
+      <section class="dashboard-grid">
+        <div class="stack-column">
+          <section class="panel-card">
+            <div class="panel-head">
+              <div class="card-illustration tone-leaderboard"><i class="fa-solid fa-ranking-star"></i></div>
+              <div>
+                <span class="card-tag">Leaderboard</span>
+                <h3>ترتيب الأصدقاء</h3>
+              </div>
+              <i class="fa-solid fa-ranking-star panel-head-icon"></i>
+            </div>
+            <div id="leaderboardList" class="list-shell empty-state">لا توجد بيانات كافية بعد.</div>
+          </section>
 
-    <!-- زر الرجوع للـ Lobby -->
-    <button class="btn-lobby" onclick="backToLobby()">
-       <span class="lobby"><i class="fa-solid fa-right-from-bracket"></i></i></span> 
-        <span class="text">Back to Lobby</span>
-    </button>
-  </div>
+          <section class="panel-card">
+            <div class="panel-head">
+              <div class="card-illustration tone-friends"><i class="fa-solid fa-user-group"></i></div>
+              <div>
+                <span class="card-tag">Friends</span>
+                <h3>الأصدقاء والطلبات</h3>
+              </div>
+              <i class="fa-solid fa-user-group panel-head-icon"></i>
+            </div>
 
-  <!-- إشعارات -->
+            <div class="input-action-row">
+              <input id="friendCodeInput" type="text" placeholder="أدخل Friend Code">
+              <button class="primary-btn compact-btn" onclick="sendFriendRequest()">إرسال طلب</button>
+            </div>
+
+            <div class="friends-layout">
+              <div>
+                <p class="mini-label">طلبات واردة</p>
+                <div id="friendRequestsList" class="list-shell empty-state">لا توجد طلبات حالياً.</div>
+              </div>
+              <div>
+                <p class="mini-label">الأصدقاء</p>
+                <div id="friendsList" class="list-shell empty-state">لا يوجد أصدقاء بعد.</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="stack-column">
+          <section class="panel-card creation-card">
+            <div class="panel-head">
+              <div class="card-illustration tone-create"><i class="fa-solid fa-sliders"></i></div>
+              <div>
+                <span class="card-tag">Create Arena</span>
+                <h3>إعدادات الغرفة</h3>
+              </div>
+              <i class="fa-solid fa-sliders panel-head-icon"></i>
+            </div>
+
+            <div class="settings-grid">
+              <label class="setting-field">
+                <span class="setting-label"><i class="fa-solid fa-lock"></i><span>نوع الغرفة</span></span>
+                <select id="roomVisibilityInput">
+                  <option value="private">خاصة</option>
+                  <option value="public">عامة</option>
+                </select>
+              </label>
+              <label class="setting-field">
+                <span class="setting-label"><i class="fa-solid fa-flag-checkered"></i><span>الجولات المطلوبة للفوز</span></span>
+                <select id="roundsToWinInput">
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="5">5</option>
+                </select>
+              </label>
+              <label class="setting-field">
+                <span class="setting-label"><i class="fa-regular fa-clock"></i><span>مؤقت الجولة</span></span>
+                <select id="timerSecondsInput">
+                  <option value="8">8s</option>
+                  <option value="10" selected>10s</option>
+                  <option value="15">15s</option>
+                </select>
+              </label>
+              <label class="setting-field">
+                <span class="setting-label"><i class="fa-solid fa-hashtag"></i><span>Room Code</span></span>
+                <input id="roomIdInput" type="text" placeholder="أدخل Room Code">
+              </label>
+            </div>
+
+            <div class="action-row">
+              <button class="primary-btn" onclick="createRoom()">
+                <i class="fa-solid fa-plus"></i>
+                <span>إنشاء Arena</span>
+              </button>
+              <button class="outline-btn" onclick="joinRoom()">
+                <i class="fa-solid fa-link"></i>
+                <span>انضمام</span>
+              </button>
+            </div>
+
+            <div class="history-card">
+              <div class="history-card-head">
+                <div class="card-illustration tone-history"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div>
+                  <span class="mini-label label-with-icon"><i class="fa-solid fa-clock-rotate-left"></i><span>آخر 5 مباريات</span></span>
+                  <strong>Match History</strong>
+                </div>
+                <i class="fa-solid fa-clock-rotate-left history-head-icon"></i>
+              </div>
+              <div id="recentMatchesList" class="list-shell empty-state compact-empty">لا توجد مباريات بعد.</div>
+              <div class="legacy-room-state" aria-hidden="true">
+                <strong id="roomStatusText">لا توجد غرفة نشطة</strong>
+                <strong id="activeRoomCode">-</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-head">
+              <div class="card-illustration tone-public"><i class="fa-solid fa-globe"></i></div>
+              <div>
+                <span class="card-tag">Open Public Rooms</span>
+                <h3>الغرف العامة</h3>
+              </div>
+              <i class="fa-solid fa-globe panel-head-icon"></i>
+            </div>
+            <div id="publicRoomsList" class="list-shell empty-state">لا توجد غرف عامة مفتوحة الآن.</div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section id="arenaView" class="page-view arena-view" style="display:none;">
+      <header class="arena-topbar">
+        <button class="ghost-btn" onclick="leaveRoom()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>خروج من الـ Arena</span>
+        </button>
+
+        <div class="arena-chips">
+          <div class="arena-chip">
+            <span class="mini-label label-with-icon"><i class="fa-solid fa-hashtag"></i><span>Room</span></span>
+            <strong id="arenaRoomCode">-</strong>
+          </div>
+          <div class="arena-chip timer-chip">
+            <span class="mini-label label-with-icon"><i class="fa-regular fa-clock"></i><span>Round Timer</span></span>
+            <strong id="roundTimerText">--</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="arena-shell">
+        <div class="arena-heading">
+          <span class="card-tag">Live Arena</span>
+          <h2 id="matchHeadline">المواجهة</h2>
+          <p id="info">بانتظار بدء المباراة</p>
+        </div>
+
+        <div class="arena-main">
+          <article class="fighter-card rival">
+            <div class="fighter-head">
+              <div>
+                <span class="mini-label">الخصم</span>
+                <h3 id="name2">Player 2</h3>
+              </div>
+              <strong class="score-badge" id="score2">0</strong>
+            </div>
+            <p id="choice2" class="choice-state">Waiting...</p>
+            <div id="reaction2" class="floating-reaction"></div>
+          </article>
+
+          <section class="battle-stage">
+            <div class="battle-core">
+              <div class="ring ring-left"></div>
+              <div class="ring ring-right"></div>
+              <div class="hands-wrap" id="battleArea" style="display:none;">
+                <div class="hand-pod"><div class="hand" id="leftHand">✊</div></div>
+                <div class="versus-core">VS</div>
+                <div class="hand-pod"><div class="hand" id="rightHand">✊</div></div>
+              </div>
+            </div>
+            <div class="battle-result">
+              <h3 id="result">ابدأ الجولة</h3>
+              <p id="roundMetaText">اختر حركتك قبل انتهاء الوقت.</p>
+            </div>
+          </section>
+
+          <article class="fighter-card self">
+            <div class="fighter-head">
+              <div>
+                <span class="mini-label">أنت</span>
+                <h3 id="name1">Player 1</h3>
+              </div>
+              <strong class="score-badge" id="score1">0</strong>
+            </div>
+            <p id="choice1" class="choice-state">Waiting...</p>
+            <div id="reaction1" class="floating-reaction"></div>
+          </article>
+        </div>
+
+        <div class="arena-controls">
+          <section class="control-card">
+            <div class="panel-head compact">
+              <div>
+                <span class="card-tag">Choose Move</span>
+                <h3>حركتك</h3>
+              </div>
+            </div>
+            <div class="move-grid">
+              <button class="move-btn rock" onclick="play('Rock')"><i class="far fa-hand-rock"></i><span>Rock</span></button>
+              <button class="move-btn paper" onclick="play('Paper')"><i class="far fa-hand-paper"></i><span>Paper</span></button>
+              <button class="move-btn scissors" onclick="play('Scissors')"><i class="far fa-hand-peace"></i><span>Scissors</span></button>
+            </div>
+          </section>
+
+          <section class="control-card">
+            <div class="panel-head compact">
+              <div>
+                <span class="card-tag">Reactions</span>
+                <h3>تفاعل سريع</h3>
+              </div>
+            </div>
+            <div class="reaction-grid">
+              <button class="emoji-btn" onclick="sendReaction('😂')">😂</button>
+              <button class="emoji-btn" onclick="sendReaction('🔥')">🔥</button>
+              <button class="emoji-btn" onclick="sendReaction('😮')">😮</button>
+              <button class="emoji-btn" onclick="sendReaction('😡')">😡</button>
+            </div>
+          </section>
+        </div>
+
+        <section id="summaryPanel" class="summary-card" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <span class="card-tag">Match Summary</span>
+              <h3 id="summaryTitle">نتيجة المباراة</h3>
+            </div>
+            <i class="fa-solid fa-chart-simple panel-head-icon"></i>
+          </div>
+          <div class="summary-hero">
+            <div class="summary-badges">
+              <div class="summary-rank-side">
+                <span class="mini-label">الرانك الحالي</span>
+                <div id="summaryRankCurrentBadge"></div>
+              </div>
+              <div class="summary-rank-arrow">
+                <i class="fa-solid fa-arrow-left"></i>
+              </div>
+              <div class="summary-rank-side">
+                <span class="mini-label">الهدف التالي</span>
+                <div id="summaryRankNextBadge"></div>
+              </div>
+            </div>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="mini-label">النقاط</span>
+                <strong id="summaryPointsDelta">0</strong>
+              </div>
+              <div class="summary-item">
+                <span class="mini-label">تغير الرانك</span>
+                <strong id="summaryRankDelta">No Change</strong>
+              </div>
+              <div class="summary-item">
+                <span class="mini-label">الفائز</span>
+                <strong id="summaryWinner">-</strong>
+              </div>
+              <div class="summary-item">
+                <span class="mini-label">الخاسر</span>
+                <strong id="summaryLoser">-</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-progress-stack">
+            <article class="summary-progress-card">
+              <div class="summary-progress-head">
+                <div>
+                  <span class="mini-label">تغيّر النقاط</span>
+                  <strong id="summaryPointsRange">0 → 0</strong>
+                </div>
+                <span id="summaryPointsState" class="summary-state-pill neutral">Stable</span>
+              </div>
+              <div class="summary-progress-track">
+                <span id="summaryPointsBeforeMarker" class="summary-progress-marker before"></span>
+                <span id="summaryPointsAfterMarker" class="summary-progress-marker after"></span>
+                <span id="summaryPointsProgressFill" class="summary-progress-fill"></span>
+              </div>
+              <p id="summaryPointsMeta" class="summary-progress-meta">لا يوجد تغير.</p>
+            </article>
+
+            <article class="summary-progress-card">
+              <div class="summary-progress-head">
+                <div>
+                  <span class="mini-label">تقدم الرانك</span>
+                  <strong id="summaryRankStatus">Bronze → Silver</strong>
+                </div>
+                <span id="summaryRankState" class="summary-state-pill neutral">No Change</span>
+              </div>
+              <div class="summary-progress-track rank-track">
+                <span id="summaryRankProgressFill" class="summary-progress-fill"></span>
+              </div>
+              <p id="summaryRankProgressMeta" class="summary-progress-meta">0 / 40 pts نحو Silver</p>
+            </article>
+          </div>
+          <div class="summary-actions">
+            <button id="playAgainBtn" class="primary-btn" style="display:none;" onclick="resetMatch()">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>إعادة المباراة</span>
+            </button>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
   <div id="toast-container"></div>
 
-  <!-- موديل الكود + QR -->
   <div id="roomModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Room Code</h2>
-      <p id="roomCodeText"></p>
+    <div class="modal-panel">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <span class="card-tag">Room Ready</span>
+      <h3>شارك الكود أو QR</h3>
+      <p id="roomCodeText">-</p>
       <div id="qrcode"></div>
-      <button onclick="copyRoomCode()">Copy Code</button>
+      <button class="primary-btn wide-btn" onclick="copyRoomCode()">
+        <i class="fa-solid fa-copy"></i>
+        <span>نسخ الكود</span>
+      </button>
     </div>
   </div>
 
-  
- 
-  <script src="script.js"></script>
-  
+  <div id="rankOverviewModal" class="modal">
+    <div class="modal-panel rank-modal-panel">
+      <span class="card-tag">Rank Ladder</span>
+      <h3>مستويات الرانك</h3>
+      <p class="rank-modal-subtitle">رانكك الحالي: <span id="rankOverviewCurrentLabel">Bronze</span></p>
+      <div id="rankOverviewList" class="rank-overview-list"></div>
+      <div class="rank-overview-progress">
+        <div class="rank-overview-progress-head">
+          <span class="mini-label">التقدم للرانك التالي</span>
+          <strong id="rankOverviewProgressLabel">0 / 40 pts</strong>
+        </div>
+        <div class="summary-progress-track rank-track">
+          <span id="rankOverviewProgressFill" class="summary-progress-fill"></span>
+        </div>
+        <p id="rankOverviewProgressMeta" class="summary-progress-meta">باقي 40 نقطة للوصول إلى Silver</p>
+      </div>
+    </div>
+  </div>
+<script src="supabase-config.js?v=20260326h"></script>
+<script src="script.js?v=20260326am"></script>
 </body>
-
 </html>
