@@ -2,25 +2,25 @@
 
 <div align="center">
 
-![HTML](https://img.shields.io/badge/HTML-واجهة%20التطبيق-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS](https://img.shields.io/badge/CSS-التصميم%20والثيمات-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-المنطق%20والتفاعل-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111111)
-![Supabase](https://img.shields.io/badge/Supabase-قاعدة%20البيانات%20والتوثيق-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![HTML](https://img.shields.io/badge/HTML-App%20Structure-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-Design%20%26%20Themes-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-Logic%20%26%20Interaction-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111111)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20Database-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 
-تجربة **Rock Paper Scissors** حديثة تركّز على **الأصدقاء، الرانكات، النقاط، والغرف الخاصة** داخل واجهة عصرية مع `Light / Dark Theme`.
+تجربة **Rock Paper Scissors** بشكل حديث ومختلف، مبنية حول **الأصدقاء، الرانكات، النقاط، والغرف الخاصة** داخل واجهة عصرية مع `Light / Dark Theme`.
 
 </div>
 
 ---
 
-## نبذة
+## عن اللعبة
 
-`RPS Arena` هو مشروع لعبة حجر ورقة مقص لكن بشكل أوسع من اللعبة التقليدية.
-بدل صفحة لعب بسيطة، المشروع يقدم:
+`RPS Arena` ليست مجرد لعبة حجر ورقة مقص عادية، بل تجربة اجتماعية كاملة تجمع بين اللعب السريع والتنافس الخفيف داخل مساحة خاصة بك وبأصدقائك.
 
-- نظام حساب وتسجيل دخول عبر Supabase
-- لوحة تحكم حديثة
-- نقاط ورانكات
+بدل صفحة لعب بسيطة، ستحصل هنا على:
+
+- لوحة تحكم أنيقة وحديثة
+- نظام نقاط ورانكات
 - أصدقاء وطلبات صداقة
 - غرف خاصة وعامة
 - Arena منفصلة للمباراة
@@ -29,43 +29,58 @@
 
 ---
 
-## أهم الميزات
+## لماذا المشروع مميز؟
 
-### لوحة التحكم
+### تصميم عصري
 
-- عرض `Points / Rank / Wins / Losses`
-- عرض `Friend Code`
-- نافذة منبثقة لسلم الرانكات
-- دعم الثيم الفاتح والداكن
+- واجهة حديثة ومنظمة
+- أنيميشن ناعمة
+- ثيمين `Dark / Light`
+- بطاقات وواجهات أقرب لمنتج احترافي حقيقي
 
-### الـ Arena
+### تجربة لعب أفضل
 
 - إخفاء اختيار الخصم حتى يختار الطرفان
 - مؤقت لكل جولة
-- اختيار تلقائي عند انتهاء الوقت
-- Reactions داخل المباراة
-- ملخص نهائي يوضح تغيّر النقاط والرانك
+- ملخص نهائي يوضح الربح والخسارة
+- تفاعل مباشر داخل الـ Arena
 
-### النظام الاجتماعي
+### تجربة اجتماعية
 
-- إرسال واستقبال طلبات الصداقة
+- إضافة أصدقاء وإرسال طلبات
 - ترتيب خاص بالأصدقاء
-- تجربة خاصة أكثر من Leaderboard عالمي مفتوح
+- تجربة أكثر خصوصية من Leaderboard عالمي مفتوح
 
 ---
 
-## التقنيات المستخدمة
+## أهم المميزات
 
-- `HTML`
-- `CSS`
-- `Vanilla JavaScript`
-- `Supabase`
+- `Dashboard` حديثة لعرض:
+  `Points / Rank / Wins / Losses`
+
+- `Rank Ladder Modal`
+  لعرض جميع الرانكات والتقدم نحو الرتبة التالية
+
+- `Custom Arena`
+  مع إعدادات مثل:
+  - نوع الغرفة
+  - عدد الجولات
+  - وقت الجولة
+
+- `Realtime Reactions`
+  أثناء المباراة
+
+- `Match Summary`
+  يوضح تغيّر النقاط والرانك بعد كل مواجهة
+
+- `Last 5 Match History`
+  لمراجعة آخر المباريات بشكل سريع
 
 ---
 
-## تشغيل المشروع محليًا
+## تشغيل المشروع
 
-يفضل تشغيل المشروع من خلال `localhost` بدل الفتح المباشر عبر `file://`.
+لتجربة المشروع محليًا، يفضل تشغيله عبر `localhost` بدل الفتح المباشر من `file://`.
 
 مثال:
 
@@ -81,47 +96,26 @@ http://localhost:5500
 
 ---
 
-## إعداد Supabase
+## ربط Supabase
 
-الملف المسؤول عن الإعدادات هو:
+الملف المستخدم للإعدادات هو:
 
 ```text
 supabase-config.js
 ```
 
-ويجب أن يحتوي على:
+ويحتوي على:
 
 - `supabaseUrl`
 - `supabaseAnonKey`
 
-مهم:
-
-- لا تضع `service_role key` داخل ملفات الفرونت أبدًا
-- الحماية الحقيقية تكون عبر `RLS Policies` داخل Supabase
-
 ---
 
-## ملفات المشروع
+## ملاحظات سريعة
 
-- `index.html`
-  هيكل التطبيق والواجهات
-
-- `style.css`
-  التصميم الكامل، الثيمات، والأنيميشن
-
-- `script.js`
-  منطق اللعب، الحساب، الغرف، الرانكات، والتفاعل اللحظي
-
-- `supabase-config.js`
-  إعدادات الاتصال مع Supabase
-
----
-
-## ملاحظات
-
-- المشروع موجه للعمل داخل المتصفح مباشرة
-- يمكن تطويره لاحقًا إلى بنية أكبر باستخدام `Vite` أو backend منفصل
-- يفضل ضبط `RLS` بشكل جيد قبل استخدامه بشكل فعلي
+- المشروع مبني ليعمل مباشرة داخل المتصفح
+- يمكن تطويره لاحقًا بسهولة إلى بنية أكبر
+- الواجهة والتجربة موجهتان لتكونا خفيفة، حديثة، وممتعة بصريًا
 
 ---
 
