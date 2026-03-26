@@ -313,6 +313,30 @@ p {
   gap: 22px;
 }
 
+.landing-nav {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 34px;
+  background: linear-gradient(180deg, rgba(20, 18, 21, 0.9), rgba(15, 13, 16, 0.78));
+  border: 1px solid rgba(69, 73, 85, 0.18);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.landing-nav::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.025), transparent 32%);
+  pointer-events: none;
+}
+
+.landing-nav > * {
+  position: relative;
+  z-index: 1;
+}
+
 .landing-nav,
 .dashboard-topbar,
 .arena-topbar,
@@ -558,6 +582,11 @@ p {
   animation: fadeSlideUp 0.9s ease both;
 }
 
+.spotlight-card > div:last-child {
+  display: grid;
+  gap: 8px;
+}
+
 .spotlight-card:nth-child(2) {
   animation-delay: 0.08s;
 }
@@ -594,6 +623,10 @@ p {
   flex-direction: column;
   gap: 14px;
   animation: fadeSlideUp 1s ease both;
+}
+
+.feature-box > i {
+  flex-shrink: 0;
 }
 
 .feature-box:nth-child(2) {
@@ -651,6 +684,10 @@ p {
 .auth-copy h1 {
   font-size: clamp(2.1rem, 4vw, 4rem);
   line-height: 1.04;
+}
+
+.auth-title-block .card-tag {
+  color: var(--accent);
 }
 
 .auth-points {
@@ -719,6 +756,55 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.remember-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: var(--muted);
+  font-weight: 700;
+  user-select: none;
+  cursor: pointer;
+}
+
+.remember-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.forgot-link {
+  margin-top: -4px;
+  color: var(--accent);
+}
+
+.forgot-link:hover {
+  color: var(--text);
+}
+
+.auth-recovery-box {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+}
+
+.compact-title-block {
+  gap: 6px;
+}
+
+.password-settings-grid {
+  grid-template-columns: 1fr !important;
+}
+
+.password-panel {
+  display: grid;
+  gap: 14px;
 }
 
 .active-tab {
@@ -2785,6 +2871,7 @@ body, .app-shell, .dashboard-shell, .arena-shell, .landing-shell {
   color: var(--text) !important;
 }
 
+.landing-nav,
 .dashboard-topbar,
 .arena-topbar {
   padding: 18px 22px !important;
@@ -2817,6 +2904,7 @@ body, .app-shell, .dashboard-shell, .arena-shell, .landing-shell {
   gap: 4px;
 }
 
+html[data-theme="light"] .landing-nav,
 html[data-theme="light"] .dashboard-topbar,
 html[data-theme="light"] .arena-topbar {
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,248,248,0.92)) !important;
@@ -3064,6 +3152,11 @@ html[data-theme="dark"] .dashboard-intro .card-tag,
 html[data-theme="dark"] .panel-head .card-tag,
 html[data-theme="dark"] .history-card-head .mini-label,
 html[data-theme="dark"] .history-card-head strong {
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .landing-nav .nav-label,
+html[data-theme="dark"] .hero-side .card-tag {
   color: var(--muted) !important;
 }
 

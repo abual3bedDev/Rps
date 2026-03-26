@@ -1,7 +1,16 @@
 const { createClient } = window.supabase;
+const AUTH_PREFS_KEY = "rps_auth_prefs";
 const supabaseClient = createClient(
   window.APP_CONFIG.supabaseUrl,
-  window.APP_CONFIG.supabaseAnonKey
+  window.APP_CONFIG.supabaseAnonKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage
+    }
+  }
 );
 
 const STARTING_POINTS = 20;
@@ -89,9 +98,190 @@ function initTheme() {
   });
 }
 
+function setupLandingContent() {
+  const spotlightCards = document.querySelectorAll(".hero-side .spotlight-card");
+  const featureCards = document.querySelectorAll(".feature-strip .feature-box");
+
+  if (spotlightCards[2]) {
+    const cardTag = spotlightCards[2].querySelector(".card-tag");
+    const cardTitle = spotlightCards[2].querySelector("h3");
+    const cardText = spotlightCards[2].querySelector("p");
+
+    if (cardTag) cardTag.textContent = "Modern UI";
+    if (cardTitle) cardTitle.textContent = "Visual Experience";
+    if (cardText) {
+      cardText.textContent = "واجهة مرتبة بحركات ناعمة، بطاقات واضحة، وانتقالات حديثة تعطي التجربة شكل منصة لعب حقيقية.";
+    }
+  }
+
+  if (featureCards[2]) {
+    const cardTitle = featureCards[2].querySelector("h3");
+    const cardText = featureCards[2].querySelector("p");
+
+    if (cardTitle) cardTitle.textContent = "تصاميم عصرية";
+    if (cardText) {
+      cardText.textContent = "واجهة حديثة بتفاصيل أنظف، ثيمات متناسقة، أنيميشن ناعمة، وتجربة بصرية أقرب لمنتج احترافي كامل.";
+    }
+  }
+
+  if (featureCards[3]) {
+    const cardTitle = featureCards[3].querySelector("h3");
+    const cardText = featureCards[3].querySelector("p");
+
+    if (cardTitle) cardTitle.textContent = "مميزات متجددة";
+    if (cardText) {
+      cardText.textContent = "رانكات، نقاط، سجل مباريات، أصدقاء، وغرف مخصصة قابلة للتطوير لاحقًا مع مزايا أكثر داخل نفس التجربة.";
+    }
+  }
+}
+
+function setupPasswordUi() {
+  const authCard = document.querySelector(".auth-card");
+  const authSubmitBtn = qs("authSubmitBtn");
+  const stackColumn = document.querySelector("#dashboardView .stack-column");
+
+  if (authCard && authSubmitBtn && !qs("forgotPasswordBtn")) {
+    authSubmitBtn.insertAdjacentHTML("beforebegin", `
+      <button id="forgotPasswordBtn" class="back-link forgot-link" type="button" onclick="requestPasswordReset()">
+        <i class="fa-solid fa-key"></i>
+        <span>نسيت كلمة المرور؟</span>
+      </button>
+    `);
+  }
+
+  if (authCard && authSubmitBtn && !qs("passwordRecoveryBox")) {
+    authSubmitBtn.insertAdjacentHTML("afterend", `
+      <div id="passwordRecoveryBox" class="auth-recovery-box" style="display:none;">
+        <div class="auth-title-block compact-title-block">
+          <span class="card-tag">Password Recovery</span>
+          <h3>تعيين كلمة مرور جديدة</h3>
+          <p>أدخل كلمة المرور الجديدة ثم أكدها لإكمال استعادة الحساب.</p>
+        </div>
+        <div class="field-group">
+          <label for="recoveryPasswordInput">كلمة المرور الجديدة</label>
+          <div class="input-frame">
+            <i class="fa-solid fa-lock"></i>
+            <input id="recoveryPasswordInput" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="recoveryPasswordConfirmInput">تأكيد كلمة المرور</label>
+          <div class="input-frame">
+            <i class="fa-solid fa-shield-halved"></i>
+            <input id="recoveryPasswordConfirmInput" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <button class="primary-btn wide-btn submit-btn" type="button" onclick="updatePasswordFromRecovery()">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>حفظ كلمة المرور الجديدة</span>
+        </button>
+      </div>
+    `);
+  }
+
+  if (stackColumn && !qs("newPasswordInput")) {
+    stackColumn.insertAdjacentHTML("beforeend", `
+      <section class="panel-card password-panel">
+        <div class="panel-head">
+          <div class="card-illustration tone-history"><i class="fa-solid fa-key"></i></div>
+          <div>
+            <span class="card-tag">Security</span>
+            <h3>تغيير كلمة المرور</h3>
+          </div>
+          <i class="fa-solid fa-key panel-head-icon"></i>
+        </div>
+        <div class="settings-grid password-settings-grid">
+          <label class="setting-field">
+            <span class="setting-label"><i class="fa-solid fa-lock"></i><span>كلمة المرور الجديدة</span></span>
+            <input id="newPasswordInput" type="password" placeholder="••••••••">
+          </label>
+          <label class="setting-field">
+            <span class="setting-label"><i class="fa-solid fa-shield-halved"></i><span>تأكيد كلمة المرور</span></span>
+            <input id="confirmPasswordInput" type="password" placeholder="••••••••">
+          </label>
+        </div>
+        <button class="primary-btn wide-btn" type="button" onclick="changePassword()">
+          <i class="fa-solid fa-key"></i>
+          <span>تحديث كلمة المرور</span>
+        </button>
+      </section>
+    `);
+  }
+}
+
 function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
   applyTheme(current === "dark" ? "light" : "dark");
+}
+
+function loadAuthPrefs() {
+  try {
+    const raw = localStorage.getItem(AUTH_PREFS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn("auth prefs load failed:", error);
+    return null;
+  }
+}
+
+function saveAuthPrefs() {
+  const rememberInput = qs("rememberSessionInput");
+  const shouldRemember = !rememberInput || rememberInput.checked;
+
+  try {
+    if (!shouldRemember) {
+      localStorage.removeItem(AUTH_PREFS_KEY);
+      return;
+    }
+
+    localStorage.setItem(AUTH_PREFS_KEY, JSON.stringify({
+      email: qs("emailInput")?.value?.trim() || "",
+      mode: state.authMode
+    }));
+  } catch (error) {
+    console.warn("auth prefs save failed:", error);
+  }
+}
+
+function applyAuthPrefs() {
+  const rememberInput = qs("rememberSessionInput");
+  if (!rememberInput) return;
+
+  const prefs = loadAuthPrefs();
+  rememberInput.checked = true;
+
+  if (!prefs) return;
+
+  if (prefs.email && qs("emailInput")) {
+    qs("emailInput").value = prefs.email;
+  }
+  if (prefs.mode === "signup" || prefs.mode === "login") {
+    setAuthMode(prefs.mode);
+  }
+}
+
+function setRecoveryVisible(isVisible) {
+  const recoveryBox = qs("passwordRecoveryBox");
+  const forgotBtn = qs("forgotPasswordBtn");
+  const authSubmitBtn = qs("authSubmitBtn");
+  const tabSwitcher = document.querySelector(".tab-switcher");
+  const usernameField = qs("usernameField");
+
+  if (recoveryBox) {
+    recoveryBox.style.display = isVisible ? "grid" : "none";
+  }
+  if (forgotBtn) {
+    forgotBtn.style.display = !isVisible && state.authMode === "login" ? "inline-flex" : "none";
+  }
+  if (authSubmitBtn) {
+    authSubmitBtn.style.display = isVisible ? "none" : "inline-flex";
+  }
+  if (tabSwitcher) {
+    tabSwitcher.style.display = isVisible ? "none" : "grid";
+  }
+  if (usernameField && isVisible) {
+    usernameField.style.display = "none";
+  }
 }
 
 function qs(id) {
@@ -657,10 +847,12 @@ function setAuthMode(mode) {
   qs("authSubmitBtn").querySelector("span").innerText = isSignup ? "إنشاء الحساب" : "تسجيل الدخول";
   qs("loginTabBtn").classList.toggle("active-tab", !isSignup);
   qs("signupTabBtn").classList.toggle("active-tab", isSignup);
+  setRecoveryVisible(false);
 }
 
 function openAuthScreen(mode = "signup") {
   setAuthMode(mode);
+  saveAuthPrefs();
   setLandingVisible(false);
   setSetupVisible(true);
 }
@@ -705,6 +897,7 @@ async function submitAuth() {
       return;
     }
 
+    saveAuthPrefs();
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
@@ -732,6 +925,7 @@ async function submitAuth() {
     return;
   }
 
+  saveAuthPrefs();
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
@@ -745,6 +939,78 @@ async function submitAuth() {
   await ensureProfileForSession(data.user);
   await afterAuthenticated();
   showToast("تم تسجيل الدخول", "success");
+}
+
+async function requestPasswordReset() {
+  const email = qs("emailInput")?.value?.trim();
+  if (!email) {
+    showToast("أدخل الإيميل أولًا لإرسال رابط الاستعادة", "warning");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+
+  if (error) {
+    showToast(error.message || "تعذر إرسال رابط الاستعادة", "error");
+    return;
+  }
+
+  saveAuthPrefs();
+  showToast("تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني", "success");
+}
+
+async function updatePasswordFromRecovery() {
+  const password = qs("recoveryPasswordInput")?.value || "";
+  const confirmPassword = qs("recoveryPasswordConfirmInput")?.value || "";
+
+  if (!password || password.length < 6) {
+    showToast("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل", "warning");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast("تأكيد كلمة المرور غير مطابق", "error");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if (error) {
+    showToast(error.message || "تعذر تحديث كلمة المرور", "error");
+    return;
+  }
+
+  if (qs("recoveryPasswordInput")) qs("recoveryPasswordInput").value = "";
+  if (qs("recoveryPasswordConfirmInput")) qs("recoveryPasswordConfirmInput").value = "";
+  setRecoveryVisible(false);
+  setAuthMode("login");
+  showToast("تم تحديث كلمة المرور بنجاح", "success");
+}
+
+async function changePassword() {
+  const password = qs("newPasswordInput")?.value || "";
+  const confirmPassword = qs("confirmPasswordInput")?.value || "";
+
+  if (!password || password.length < 6) {
+    showToast("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل", "warning");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast("تأكيد كلمة المرور غير مطابق", "error");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if (error) {
+    showToast(error.message || "تعذر تغيير كلمة المرور", "error");
+    return;
+  }
+
+  if (qs("newPasswordInput")) qs("newPasswordInput").value = "";
+  if (qs("confirmPasswordInput")) qs("confirmPasswordInput").value = "";
+  showToast("تم تغيير كلمة المرور بنجاح", "success");
 }
 
 async function updateUser(userId, values) {
@@ -860,6 +1126,13 @@ async function afterAuthenticated() {
 
 async function logout() {
   stopParticipationRecovery();
+  try {
+    if (!qs("rememberSessionInput")?.checked) {
+      localStorage.removeItem(AUTH_PREFS_KEY);
+    }
+  } catch (error) {
+    console.warn("auth prefs clear failed:", error);
+  }
   await supabaseClient.auth.signOut();
   clearRoomSubscriptions();
   if (state.profileChannel) supabaseClient.removeChannel(state.profileChannel);
@@ -881,6 +1154,7 @@ async function logout() {
   setAuthMode("login");
   setLandingVisible(true);
   setSetupVisible(false);
+  applyAuthPrefs();
   setView("dashboard");
 }
 
@@ -1976,8 +2250,20 @@ function copyRoomCode() {
 
 async function bootstrap() {
   initTheme();
+  setupLandingContent();
+  setupPasswordUi();
   setAuthMode("login");
+  applyAuthPrefs();
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      setLandingVisible(false);
+      setSetupVisible(true);
+      setAuthMode("login");
+      setRecoveryVisible(true);
+      showToast("أدخل كلمة المرور الجديدة لإكمال الاستعادة", "info");
+      return;
+    }
+
     if (event === "SIGNED_OUT" || !session?.user) {
       stopParticipationRecovery();
       clearRoomSubscriptions();
@@ -2057,6 +2343,9 @@ window.copyRoomCode = copyRoomCode;
 window.toggleTheme = toggleTheme;
 window.toggleRankOverview = toggleRankOverview;
 window.closeRankOverview = closeRankOverview;
+window.requestPasswordReset = requestPasswordReset;
+window.updatePasswordFromRecovery = updatePasswordFromRecovery;
+window.changePassword = changePassword;
 
 bootstrap().catch((error) => {
   console.error("bootstrap failed:", error);
