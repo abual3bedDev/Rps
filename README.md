@@ -76,38 +76,6 @@
 - `Last 5 Match History`
   لمراجعة آخر المباريات بشكل سريع
 
----
-
-## تشغيل المشروع
-
-لتجربة المشروع محليًا، يفضل تشغيله عبر `localhost` بدل الفتح المباشر من `file://`.
-
-مثال:
-
-```powershell
-py -m http.server 5500
-```
-
-ثم افتح:
-
-```text
-http://localhost:5500
-```
-
----
-
-## ربط Supabase
-
-الملف المستخدم للإعدادات هو:
-
-```text
-supabase-config.js
-```
-
-ويحتوي على:
-
-- `supabaseUrl`
-- `supabaseAnonKey`
 
 ---
 
