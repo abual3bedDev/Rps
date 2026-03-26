@@ -1,5 +1,8 @@
 const { createClient } = window.supabase;
 const AUTH_PREFS_KEY = "rps_auth_prefs";
+const AUTH_COOLDOWN_KEY = "rps_auth_cooldowns";
+const SIGNUP_COOLDOWN_MS = 90 * 1000;
+const RESET_COOLDOWN_MS = 60 * 1000;
 const supabaseClient = createClient(
   window.APP_CONFIG.supabaseUrl,
   window.APP_CONFIG.supabaseAnonKey,
@@ -33,6 +36,7 @@ const RANK_TIERS = [
 
 const state = {
   authMode: "login",
+  authSubmitting: false,
   userId: "",
   profile: null,
   friends: {},
@@ -260,6 +264,47 @@ function applyAuthPrefs() {
   }
 }
 
+function loadAuthCooldowns() {
+  try {
+    const raw = localStorage.getItem(AUTH_COOLDOWN_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (error) {
+    console.warn("auth cooldowns load failed:", error);
+    return {};
+  }
+}
+
+function saveAuthCooldowns(cooldowns) {
+  try {
+    localStorage.setItem(AUTH_COOLDOWN_KEY, JSON.stringify(cooldowns));
+  } catch (error) {
+    console.warn("auth cooldowns save failed:", error);
+  }
+}
+
+function getCooldownKey(action, email) {
+  return `${action}:${String(email || "").trim().toLowerCase()}`;
+}
+
+function getRemainingCooldownMs(action, email) {
+  const cooldowns = loadAuthCooldowns();
+  const expiresAt = Number(cooldowns[getCooldownKey(action, email)] || 0);
+  return Math.max(0, expiresAt - Date.now());
+}
+
+function startAuthCooldown(action, email, durationMs) {
+  const cooldowns = loadAuthCooldowns();
+  cooldowns[getCooldownKey(action, email)] = Date.now() + durationMs;
+  saveAuthCooldowns(cooldowns);
+}
+
+function formatCooldown(ms) {
+  const totalSeconds = Math.max(1, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return minutes ? `${minutes}:${String(seconds).padStart(2, "0")}` : `${seconds} ثانية`;
+}
+
 function setRecoveryVisible(isVisible) {
   const recoveryBox = qs("passwordRecoveryBox");
   const forgotBtn = qs("forgotPasswordBtn");
@@ -282,6 +327,46 @@ function setRecoveryVisible(isVisible) {
   if (usernameField && isVisible) {
     usernameField.style.display = "none";
   }
+}
+
+function setAuthSubmitting(isSubmitting) {
+  state.authSubmitting = isSubmitting;
+  const submitBtn = qs("authSubmitBtn");
+  const forgotBtn = qs("forgotPasswordBtn");
+
+  if (submitBtn) {
+    submitBtn.disabled = isSubmitting;
+    submitBtn.style.pointerEvents = isSubmitting ? "none" : "";
+    submitBtn.style.opacity = isSubmitting ? "0.72" : "";
+    const label = submitBtn.querySelector("span");
+    if (label) {
+      label.innerText = isSubmitting
+        ? (state.authMode === "signup" ? "جاري إنشاء الحساب..." : "جاري تسجيل الدخول...")
+        : (state.authMode === "signup" ? "إنشاء الحساب" : "تسجيل الدخول");
+    }
+  }
+
+  if (forgotBtn) {
+    forgotBtn.disabled = isSubmitting;
+    forgotBtn.style.pointerEvents = isSubmitting ? "none" : "";
+    forgotBtn.style.opacity = isSubmitting ? "0.72" : "";
+  }
+}
+
+function getFriendlyAuthError(error, mode = "login") {
+  const message = String(error?.message || "").toLowerCase();
+
+  if (message.includes("email rate limit")) {
+    return mode === "signup"
+      ? "تم إرسال محاولات كثيرة خلال وقت قصير. انتظر قليلًا ثم جرّب مرة أخرى، أو استخدم تسجيل الدخول إذا كان الحساب موجودًا."
+      : "تمت محاولات كثيرة خلال وقت قصير. انتظر قليلًا ثم جرّب مرة أخرى.";
+  }
+
+  if (message.includes("user already registered")) {
+    return "هذا البريد مسجل بالفعل. جرّب تسجيل الدخول أو استخدم استعادة كلمة المرور.";
+  }
+
+  return error?.message || (mode === "signup" ? "فشل إنشاء الحساب" : "فشل تسجيل الدخول");
 }
 
 function qs(id) {
@@ -943,8 +1028,14 @@ async function submitAuth() {
 
 async function requestPasswordReset() {
   const email = qs("emailInput")?.value?.trim();
+  const remaining = getRemainingCooldownMs("reset", email);
   if (!email) {
     showToast("أدخل الإيميل أولًا لإرسال رابط الاستعادة", "warning");
+    return;
+  }
+
+  if (remaining > 0) {
+    showToast(`يمكنك طلب رابط جديد بعد ${formatCooldown(remaining)}.`, "warning");
     return;
   }
 
@@ -1012,6 +1103,103 @@ async function changePassword() {
   if (qs("confirmPasswordInput")) qs("confirmPasswordInput").value = "";
   showToast("تم تغيير كلمة المرور بنجاح", "success");
 }
+
+window.showToastOriginal = showToast;
+const defaultSubmitAuth = submitAuth;
+submitAuth = async function submitAuthGuarded() {
+  if (state.authSubmitting) return;
+
+  const email = qs("emailInput")?.value?.trim();
+  const password = qs("passwordInput")?.value || "";
+  const username = qs("displayNameInput")?.value?.trim() || "";
+
+  if (state.authMode === "signup") {
+    const remaining = getRemainingCooldownMs("signup", email);
+    if (remaining > 0) {
+      showToast(`انتظر ${formatCooldown(remaining)} قبل محاولة إنشاء الحساب مرة أخرى.`, "warning");
+      return;
+    }
+  }
+
+  if (!email || !password) {
+    showToast("أدخل الإيميل وكلمة المرور", "error");
+    return;
+  }
+
+  if (state.authMode === "signup" && !username) {
+    showToast("أدخل اسم المستخدم", "error");
+    return;
+  }
+
+  setAuthSubmitting(true);
+
+  try {
+    const originalShowToast = showToast;
+    let hadError = false;
+    showToast = (message, type = "info", options = {}) => {
+      const normalized = String(message || "");
+      if (type === "error") {
+        hadError = true;
+        return originalShowToast(getFriendlyAuthError({ message: normalized }, state.authMode), type, options);
+      }
+      return originalShowToast(message, type, options);
+    };
+
+    await defaultSubmitAuth();
+    if (!hadError && state.authMode === "signup") {
+      startAuthCooldown("signup", email, SIGNUP_COOLDOWN_MS);
+    }
+
+    showToast = originalShowToast;
+  } catch (error) {
+    showToast(getFriendlyAuthError(error, state.authMode), "error");
+  } finally {
+    if (typeof showToast === "function" && showToast.name !== "showToast") {
+      showToast = window.showToastOriginal || showToast;
+    }
+    setAuthSubmitting(false);
+  }
+};
+
+const defaultRequestPasswordReset = requestPasswordReset;
+requestPasswordReset = async function requestPasswordResetGuarded() {
+  if (state.authSubmitting) return;
+
+  const email = qs("emailInput")?.value?.trim();
+  if (!email) {
+    showToast("أدخل الإيميل أولًا لإرسال رابط الاستعادة", "warning");
+    return;
+  }
+
+  setAuthSubmitting(true);
+
+  try {
+    const originalShowToast = showToast;
+    let hadError = false;
+    showToast = (message, type = "info", options = {}) => {
+      const normalized = String(message || "");
+      if (type === "error") {
+        hadError = true;
+        return originalShowToast(getFriendlyAuthError({ message: normalized }, "login"), type, options);
+      }
+      return originalShowToast(message, type, options);
+    };
+
+    await defaultRequestPasswordReset();
+    if (!hadError) {
+      startAuthCooldown("reset", email, RESET_COOLDOWN_MS);
+    }
+
+    showToast = originalShowToast;
+  } catch (error) {
+    showToast(getFriendlyAuthError(error, "login"), "error");
+  } finally {
+    if (typeof showToast === "function" && showToast.name !== "showToast") {
+      showToast = window.showToastOriginal || showToast;
+    }
+    setAuthSubmitting(false);
+  }
+};
 
 async function updateUser(userId, values) {
   const payload = { ...values, id: userId };
